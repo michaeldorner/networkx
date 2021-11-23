@@ -395,6 +395,32 @@ class TestLayout:
         G = nx.empty_graph(3)
         vpos = {0: (0, 0), 1: (1, 1), 2: (0.5, 0.5)}
         s_vpos = nx.rescale_layout_dict(vpos)
-        assert s_vpos == {0: (-1, -1), 1: (1, 1), 2: (0, 0)}
+
+        expectation = {
+            0: np.array((-1, -1)),
+            1: np.array((1, 1)),
+            2: np.array((0, 0)),
+        }
+        for k, v in expectation.items():
+            assert (s_vpos[k] == v).all()
         s_vpos = nx.rescale_layout_dict(vpos, scale=2)
-        assert s_vpos == {0: (-2, -2), 1: (2, 2), 2: (0, 0)}
+
+        expectation = {
+            0: np.array((-2, -2)),
+            1: np.array((2, 2)),
+            2: np.array((0, 0)),
+        }
+        for k, v in expectation.items():
+            assert (s_vpos[k] == v).all()
+
+
+def test_multipartite_layout_nonnumeric_partition_labels():
+    """See gh-5123."""
+    G = nx.Graph()
+    G.add_node(0, subset="s0")
+    G.add_node(1, subset="s0")
+    G.add_node(2, subset="s1")
+    G.add_node(3, subset="s1")
+    G.add_edges_from([(0, 2), (0, 3), (1, 2)])
+    pos = nx.multipartite_layout(G)
+    assert len(pos) == len(G)
